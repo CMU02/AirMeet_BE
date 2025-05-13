@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: AirMeet_BE
