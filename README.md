@@ -1,25 +1,8 @@
-# Redis Connection Modes
-## Sentinel (감시자)
-
-- Master + 여러 Slave + Sentinel 프로세스 구조
-- Sentinel이 자동으로 장애 감지 및 페일오버 수행
-- 클라이언트는 Sentinel을 통하여 현재 Master 위치를 확인
-
-### (AirMeet 기준) Redis 사용 목적에 따른 고려 사항
-| 기능                       | Redis 용도                | 중요도    | 내구성 필요? |
-| ------------------------ | ----------------------- | ------ | ------- |
-| 회의방 실시간 사용자 관리           | Pub/Sub 또는 Redis Stream | 높음     | 중간      |
-| 채팅 메시지 중계 (비영속)          | Pub/Sub                 | 높음     | 낮음      |
-| 방 정보/세션 상태 저장            | Key-Value 캐시 또는 Hash    | 중간\~높음 | 낮음\~중간  |
-| 파일 업로드 진행 상태 캐싱          | Key-Value               | 중간     | 낮음      |
-| 사용자 인증 세션 공유 (WebSocket) | 세션 저장소                  | 높음     | 낮음      |
-
-## 🔍결론: AirMeet에 적합한 Redis 모드
-| 모드                   | 적합성       | 이유                                                              |
-| -------------------- | --------- | --------------------------------------------------------------- |
-| **Standalone**       | ❌ (비추천)   | 장애 발생 시 전체 서비스 중단 위험                                            |
-| **Replication only** | 🔶 보통     | 읽기 부하 분산만 가능, Master 장애 시 수동 전환 필요                              |
-| **Sentinel**         | ✅ **권장**  | 실시간 회의방처럼 **24시간 가용성이 중요한 서비스**에 적합. 장애 시 자동 전환 가능              |
-| **Cluster**          | 🔶 조건부 권장 | 수백\~수천 개 회의방이 동시 생성될 경우 고려. 하지만 구조 복잡 & 트래픽 단위가 크지 않으면 오히려 오버스펙 |
-
-- 고 가용성이 필요하며, 전체 데이터를 분산할 만큼 크지는 않지만 장애 복구가 자동이어야 하는 경우(=실시간 회의방에는 중요)
+# Spring Data Redis Document
+```text
+https://docs.spring.io/spring-data/redis/reference/redis/getting-started.html
+```
+# Spring WebSocket API Document
+```text
+https://docs.spring.io/spring-framework/reference/web/websocket/server.html
+```
