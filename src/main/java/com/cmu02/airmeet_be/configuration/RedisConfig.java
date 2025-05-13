@@ -1,14 +1,20 @@
 package com.cmu02.airmeet_be.configuration;
 
+import com.cmu02.airmeet_be.domain.model.MeetingRoom;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -17,15 +23,11 @@ import java.time.Duration;
 @Configuration
 public class RedisConfig {
 
-    @Bean
     // Redis Lettuce Driver Connection Bean 등록
+    @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        // Connection Modes 에서 Sentinel 모드 사용
-        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration();
-        sentinelConfig.master("airmeet-master") // Master Name
-                // host, port
-                .sentinel("127.0.0.1", 26379)
-                .sentinel("127.0.0.1", 26380);
+        // Connection Modes 에서 Standalone 모드 사용
+        RedisStandaloneConfiguration standaloneconfig = new RedisStandaloneConfiguration("127.0.0.1", 6379);
 
         // Lettuce 클라이언트 설정 코드
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
@@ -37,17 +39,36 @@ public class RedisConfig {
                 .build();
 
 
-        return new LettuceConnectionFactory(sentinelConfig, clientConfig);
+        return new LettuceConnectionFactory(standaloneconfig, clientConfig);
     }
 
+    // ReactiveRedisTemplate Bean 등록
     @Bean
-    // RedisTemplate Bean 비동기 방식 등록
-    ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(
+    public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(
             ReactiveRedisConnectionFactory factory
     ) {
         RedisSerializationContext<String, Object> context = RedisSerializationContext
                 .<String, Object>newSerializationContext(new StringRedisSerializer())
                 .value(new GenericJackson2JsonRedisSerializer()) // Object 직렬화
+                .build();
+
+        return new ReactiveRedisTemplate<>(factory, context);
+    }
+
+    // MeetingRoom ReactiveRedisTemplate Bean 등록
+    @Bean
+    public ReactiveRedisTemplate<String, MeetingRoom> meetingRoomReactiveRedisTemplate(
+            ReactiveRedisConnectionFactory factory
+    ) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // LocalDateTime 지원
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // ISO-8601 출력
+
+        Jackson2JsonRedisSerializer<MeetingRoom> serializer = new Jackson2JsonRedisSerializer<>(mapper, MeetingRoom.class);
+
+        RedisSerializationContext<String, MeetingRoom> context = RedisSerializationContext
+                .<String, MeetingRoom>newSerializationContext(new StringRedisSerializer())
+                .value(serializer)
                 .build();
 
         return new ReactiveRedisTemplate<>(factory, context);
