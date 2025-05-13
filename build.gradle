@@ -24,12 +24,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis' // Redis
+    implementation 'io.lettuce:lettuce-core:6.6.0.RELEASE' // Redis Driver lettuce
+    implementation 'org.springframework.boot:spring-boot-starter-web' // Web
+    implementation 'org.springframework.boot:spring-boot-starter-websocket' // Web Socket
+    implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebFlux
+    testImplementation 'io.projectreactor:reactor-test'
+    compileOnly 'org.projectlombok:lombok' // Lombok
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose' // Docker Compose
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor' // Spring Configuration
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
