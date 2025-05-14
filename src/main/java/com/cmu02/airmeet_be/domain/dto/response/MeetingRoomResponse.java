@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 
 public record MeetingRoomResponse(
         String roomId,
+        String roomName,
         String host,
-        String topic,
         LocalDateTime createdDate
 ) {
     public MeetingRoomResponse(MeetingRoom room) {
-        this(room.getRoomId(), room.getHost(), room.getTopic(), room.getCreatedDate());
+        this(room.getRoomId(), room.getRoomName(), room.getHost(), room.getCreatedDate());
     }
 }

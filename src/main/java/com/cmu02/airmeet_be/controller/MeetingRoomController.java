@@ -20,10 +20,4 @@ public class MeetingRoomController {
         return service.createRoom(request)
                 .map(ResponseEntity::ok);
     }
-
-    @GetMapping("/{roomName}")
-    public Mono<ResponseEntity<MeetingRoomResponse>> getRoom(@PathVariable(name = "roomName") String roodName) {
-        return service.getRoom(roodName)
-                .map(ResponseEntity::ok);
-    }
 }
