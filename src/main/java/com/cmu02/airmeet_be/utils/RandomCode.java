@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 @RequiredArgsConstructor
 public class RandomCode {
-    private final ReactiveRedisTemplate<String, String> joinCodeRedisTemplate;
+    private final ReactiveRedisTemplate<String, String> defaultRedisTemplate;
 
     private static final String CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final Integer CODE_LENGTH = 4;
@@ -22,7 +22,7 @@ public class RandomCode {
             sb.append(CODE_CHARS.charAt(rd.nextInt(CODE_CHARS.length())));
         }
 
-        return joinCodeRedisTemplate.hasKey(sb.toString())
+        return defaultRedisTemplate.hasKey(sb.toString())
                 .flatMap(exists -> exists ? generateJoinCode() : Mono.just(sb.toString()));
     }
 }
