@@ -48,7 +48,7 @@ public class RedisConfig {
 
     // JoinCode with MeetingRoomId RedisTemplate Bean 등록
     @Bean
-    public ReactiveRedisTemplate<String, String> joinCodeRedisTemplate(
+    public ReactiveRedisTemplate<String, String> defaultRedisTemplate(
             ReactiveRedisConnectionFactory factory
     ) {
         return new ReactiveRedisTemplate<>(factory, RedisSerializationContext.string());
