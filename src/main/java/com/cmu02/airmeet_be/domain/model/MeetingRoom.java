@@ -13,6 +13,6 @@ public class MeetingRoom {
     private String roomId;
     private String roomName;
     private String host;
-    private String topic;
+    private String joinCode;
     private LocalDateTime createdDate;
 }
