@@ -2,7 +2,7 @@ package com.cmu02.airmeet_be.domain.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record UserRequestDto(
-        @NotBlank String uuid
+public record AddUserRequestDto(
+        @NotBlank String nickname
 ) {
 }
