@@ -1,7 +1,7 @@
 package com.cmu02.airmeet_be.services;
 
+import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
-import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.UserResponseDto;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
@@ -24,7 +24,7 @@ public class UserService {
     private final ReactiveRedisTemplate<String, String> defaultRedisTemplate;
 
 
-    public Mono<UserResponseDto> addUser(UserRequestDto request) {
+    public Mono<UserResponseDto> addUser(AddUserRequestDto request) {
         String userId = UUID.randomUUID().toString();
 
         User userProfile = User.builder()

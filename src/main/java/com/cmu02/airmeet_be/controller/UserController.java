@@ -1,7 +1,7 @@
 package com.cmu02.airmeet_be.controller;
 
+import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
-import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.UserResponseDto;
 import com.cmu02.airmeet_be.services.UserService;
@@ -21,7 +21,7 @@ public class UserController {
     private final UserService service;
 
     @PostMapping("/add")
-    public Mono<ResponseEntity<UserResponseDto>> addUser(@RequestBody UserRequestDto dto) {
+    public Mono<ResponseEntity<UserResponseDto>> addUser(@RequestBody AddUserRequestDto dto) {
         return service.addUser(dto)
                 .map(ResponseEntity::ok);
     }
