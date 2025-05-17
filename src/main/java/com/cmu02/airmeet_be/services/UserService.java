@@ -79,15 +79,27 @@ public class UserService {
 
     // 해당 방 퇴장
     public Mono<Void> removeUserFromRoom(ExitRoomReqDto request) {
-        return Mono.when(
-                defaultRedisTemplate.opsForSet().remove(
-                        key.enterUserListKey(request.roomId()),
-                        request.uuid()
-                ),
-                defaultRedisTemplate.opsForSet().remove(
-                        key.enterUserRoomKey(request.uuid()),
-                        request.roomId()
-                )
-        );
+        /**
+         * 시나리오
+         * 1. 사용자 존재 여부 확인
+         * - 1-1. 잘못된 UUID가 오면 여기서 걸러낸다.
+         * - 1-2. 데이터가 비어있으면 예외를 터뜨려 파이프라인을 종료시킨다.
+         * 2. 회의방 존재 여부 확인
+         * - 2-1. 사용자와 마찬가지로 잘못된 회의방 ID가 오면 걸러낸다.
+         * - 2-2. 데이터가 비어있으면 위와 같이 예외 터뜨려 파이프라인을 종료시킨다.
+         * 3. 실제 퇴장 처리
+         * - user:uuid:rooms에서 roomId 삭제
+         * - room:roomId:users에서 uuid 삭제
+         */
+        return userRedisTemplate.opsForValue().get(key.getUserKey(request.uuid()))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .flatMap(user -> roomRedisTemplate.opsForValue()
+                        .get(key.getRoomKey(request.roomId()))
+                        .switchIfEmpty(Mono.error(new IllegalArgumentException("존재하지 않는 회의방입니다.")))
+                        .flatMap(meetingRoom -> Mono.when(
+                               defaultRedisTemplate.opsForSet().remove(key.enterUserRoomKey(user.getUuid()), meetingRoom.getRoomId()),
+                               defaultRedisTemplate.opsForSet().remove(key.enterUserListKey(meetingRoom.getRoomId()), user.getUuid())
+                        ))
+                );
     }
 }
