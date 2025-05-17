@@ -1,6 +1,7 @@
 package com.cmu02.airmeet_be.controller;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.ExitRoomReqDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
@@ -37,5 +38,10 @@ public class UserController {
     @GetMapping("/rooms")
     public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody UserRequestDto dto) {
         return service.getRoomsByUser(dto);
+    }
+
+    @PostMapping("/exit-rooms")
+    public Mono<Void> removeUserFromRoom(@RequestBody @Valid ExitRoomReqDto dto) {
+        return service.removeUserFromRoom(dto);
     }
 }

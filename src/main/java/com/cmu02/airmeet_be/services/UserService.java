@@ -1,6 +1,7 @@
 package com.cmu02.airmeet_be.services;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.ExitRoomReqDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
@@ -51,16 +52,16 @@ public class UserService {
                 .flatMap(user ->
                     defaultRedisTemplate.opsForValue().get(key.getCodeKey(joinCode))
                             .switchIfEmpty(Mono.error(new IllegalArgumentException("유효하지 않는 코드입니다.")))
-                            .flatMap(roomId -> {
-                                return roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
+                            .flatMap(roomId ->
+                                roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
                                         .switchIfEmpty(Mono.error(new IllegalArgumentException("회의방이 존재하지 않습니다.")))
                                         .flatMap(room -> Mono.when(
                                                 // 참가자 목록 추가
                                                 defaultRedisTemplate.opsForSet().add(key.enterUserListKey(roomId), userId),
                                                 // 사용자 참가한 방 추가
                                                 defaultRedisTemplate.opsForSet().add(key.enterUserRoomKey(userId), roomId)
-                                        ).thenReturn(new MeetingRoomResponse(room)));
-                            })
+                                        ).thenReturn(new MeetingRoomResponse(room)))
+                            )
                 );
     }
 
@@ -74,5 +75,19 @@ public class UserService {
                                     Mono.error(new IllegalArgumentException("존재하지 않는 회의방 입니다."))
                             ).map(MeetingRoomResponse::new)
                 );
+    }
+
+    // 해당 방 퇴장
+    public Mono<Void> removeUserFromRoom(ExitRoomReqDto request) {
+        return Mono.when(
+                defaultRedisTemplate.opsForSet().remove(
+                        key.enterUserListKey(request.roomId()),
+                        request.uuid()
+                ),
+                defaultRedisTemplate.opsForSet().remove(
+                        key.enterUserRoomKey(request.uuid()),
+                        request.roomId()
+                )
+        );
     }
 }
