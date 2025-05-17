@@ -40,6 +40,7 @@ public class UserController {
         return service.getRoomsByUser(dto);
     }
 
+    // 해당 회의방 퇴장
     @PostMapping("/exit-rooms")
     public Mono<Void> removeUserFromRoom(@RequestBody @Valid ExitRoomReqDto dto) {
         return service.removeUserFromRoom(dto);
