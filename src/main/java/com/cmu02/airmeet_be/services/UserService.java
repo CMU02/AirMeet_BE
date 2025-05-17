@@ -2,15 +2,18 @@ package com.cmu02.airmeet_be.services;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.UserResponseDto;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
 import com.cmu02.airmeet_be.domain.model.User;
 import com.cmu02.airmeet_be.utils.KeyPreFix;
+import com.cmu02.airmeet_be.utils.KeySuffix;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -23,7 +26,7 @@ public class UserService {
     private final ReactiveRedisTemplate<String, MeetingRoom> roomRedisTemplate; // 회의방 아이디/회의방정보 템플릿
     private final ReactiveRedisTemplate<String, String> defaultRedisTemplate;
 
-
+    // 유저 추가
     public Mono<UserResponseDto> addUser(AddUserRequestDto request) {
         String userId = UUID.randomUUID().toString();
 
@@ -37,10 +40,10 @@ public class UserService {
         ).thenReturn(new UserResponseDto(userProfile));
     }
 
+    // JoinCode로 이용하여 회의방 참가
     public Mono<MeetingRoomResponse> joinRoomByCode(JoinRoomRequestDto request) {
         String userId = request.uuid();
         String joinCode = request.code();
-
 
         String userKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + userId;
         String codeKey = KeyPreFix.CODE_KEY_PREFIX.getKeyPrefix() + joinCode;
@@ -51,10 +54,12 @@ public class UserService {
                     defaultRedisTemplate.opsForValue().get(codeKey)
                             .switchIfEmpty(Mono.error(new IllegalArgumentException("유효하지 않는 코드입니다.")))
                             .flatMap(roomId -> {
-                                String roomKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId; // 방키
-                                String roomUsersKey = roomKey + ":users"; // 참가자 목록
-                                String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + userId + ":rooms"; // 사용자가 참가한 방
-
+                                // 방키 (room:example)
+                                String roomKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId;
+                                // 참가자 목록 (room:example:users)
+                                String roomUsersKey = roomKey + KeySuffix.USERS_SUFFIX.getKeySuffix();
+                                // 사용자가 참가한 방 (user:example:rooms)
+                                String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + userId + KeySuffix.ROOMS_SUFFIX.getKeySuffix();
                                 return roomRedisTemplate.opsForValue().get(roomKey)
                                         .switchIfEmpty(Mono.error(new IllegalArgumentException("회의방이 존재하지 않습니다.")))
                                         .flatMap(room -> Mono.when(
@@ -63,5 +68,24 @@ public class UserService {
                                         ).thenReturn(new MeetingRoomResponse(room)));
                             })
                 );
+    }
+
+    // 해당 유저가 들어가 있는 모든 회의방 조회
+    public Flux<MeetingRoomResponse> getRoomsByUser(UserRequestDto request) {
+        String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() // user:
+                + request.uuid() // exampleUUID
+                + KeySuffix.ROOMS_SUFFIX.getKeySuffix(); // :rooms
+
+        return defaultRedisTemplate.opsForSet().members(userRoomsKey)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 존재하지 않거나 참여 중인 회의방이 아닙니다.")))
+                .flatMap(roomId -> {
+                    String roomKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId;
+
+                    return roomRedisTemplate.opsForValue()
+                            .get(roomKey)
+                            .switchIfEmpty(
+                                    Mono.error(new IllegalArgumentException("존재하지 않는 회의방 입니다."))
+                            ).map(MeetingRoomResponse::new);
+                });
     }
 }

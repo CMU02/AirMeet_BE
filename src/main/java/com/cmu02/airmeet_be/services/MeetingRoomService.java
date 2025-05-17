@@ -5,6 +5,7 @@ import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
 import com.cmu02.airmeet_be.domain.model.User;
 import com.cmu02.airmeet_be.utils.KeyPreFix;
+import com.cmu02.airmeet_be.utils.KeySuffix;
 import com.cmu02.airmeet_be.utils.RandomCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -41,9 +42,13 @@ public class MeetingRoomService {
                                     .build();
 
                             // 참가자 목록
-                            String roomUserKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId + ":users";
+                            String roomUserKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix()
+                                    + roomId
+                                    + KeySuffix.USERS_SUFFIX.getKeySuffix();
                             // 사용자가 참가한 방
-                            String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + user.getUuid() + ":rooms";
+                            String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix()
+                                    + user.getUuid()
+                                    + KeySuffix.ROOMS_SUFFIX.getKeySuffix();
 
                             return Mono.when(
                                     // 생성한 회의방ID/회의방 정보 저장
