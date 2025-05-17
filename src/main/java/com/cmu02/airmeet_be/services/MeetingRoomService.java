@@ -41,7 +41,7 @@ public class MeetingRoomService {
                                     .build();
 
                             // 참가자 목록
-                            String roomUserKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId + ":user";
+                            String roomUserKey = KeyPreFix.ROOM_KEY_PREFIX.getKeyPrefix() + roomId + ":users";
                             // 사용자가 참가한 방
                             String userRoomsKey = KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + user.getUuid() + ":rooms";
 
@@ -51,9 +51,9 @@ public class MeetingRoomService {
                                     // 생성한 조인코드/회의방ID 저장
                                     defaultRedisTemplate.opsForValue().set(KeyPreFix.CODE_KEY_PREFIX.getKeyPrefix() + joinCode, roomId),
                                     // 생성한 회의방 참가 및 참가자 목록
-                                    defaultRedisTemplate.opsForValue().set(roomUserKey, user.getUuid()),
+                                    defaultRedisTemplate.opsForSet().add(roomUserKey, user.getUuid()),
                                     // 해당 사용자가 참가한 방
-                                    defaultRedisTemplate.opsForValue().set(userRoomsKey, roomId)
+                                    defaultRedisTemplate.opsForSet().add(userRoomsKey, roomId)
                             ).thenReturn(new MeetingRoomResponse(room));
                         })
                 );
