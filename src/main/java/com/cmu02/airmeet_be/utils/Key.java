@@ -52,4 +52,13 @@ public class Key {
     public String enterUserRoomKey(String uuid) {
         return KeyPreFix.USER_KEY_PREFIX.getKeyPrefix() + uuid + KeySuffix.ROOMS_SUFFIX.getKeySuffix();
     }
+
+    /**
+     * roomId에 해당하는 채팅내용
+     * @param roomId 회의방 고유 아이디
+     * @return "chat-room:roomId"
+     */
+    public String getChatRoomKey(String roomId) {
+        return KeyPreFix.CHAT_ROOM_PREFIX.getKeyPrefix() + roomId;
+    }
 }

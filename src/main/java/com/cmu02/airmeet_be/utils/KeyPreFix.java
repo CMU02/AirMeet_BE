@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum KeyPreFix {
     USER_KEY_PREFIX("user:"),
     ROOM_KEY_PREFIX("room:"),
-    CODE_KEY_PREFIX("code:");
+    CODE_KEY_PREFIX("code:"),
+    CHAT_ROOM_PREFIX("chat-room:");
 
     private final String keyPrefix;
 
