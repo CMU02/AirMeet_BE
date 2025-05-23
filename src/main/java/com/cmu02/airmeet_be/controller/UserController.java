@@ -1,7 +1,7 @@
 package com.cmu02.airmeet_be.controller;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
-import com.cmu02.airmeet_be.domain.dto.request.ExitRoomReqDto;
+import com.cmu02.airmeet_be.domain.dto.request.ExitRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
@@ -34,6 +34,13 @@ public class UserController {
                 .map(ResponseEntity::ok);
     }
 
+    // 조인코드를 이용하여 회의방 정보 가져오기
+    @GetMapping("/get-joinRoom")
+    public Mono<ResponseEntity<MeetingRoomResponse>> getRoomByCode(@RequestBody @Valid JoinRoomRequestDto dto) {
+        return service.getRoomByCode(dto)
+                .map(ResponseEntity::ok);
+    }
+
     // 해당 유저가 참가하고 있는 방 조회
     @GetMapping("/rooms")
     public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody UserRequestDto dto) {
@@ -42,7 +49,7 @@ public class UserController {
 
     // 해당 회의방 퇴장
     @PostMapping("/exit-rooms")
-    public Mono<Void> removeUserFromRoom(@RequestBody @Valid ExitRoomReqDto dto) {
+    public Mono<Void> removeUserFromRoom(@RequestBody @Valid ExitRoomRequestDto dto) {
         return service.removeUserFromRoom(dto);
     }
 }
