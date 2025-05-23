@@ -8,6 +8,8 @@ import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.UserResponseDto;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
 import com.cmu02.airmeet_be.domain.model.User;
+import com.cmu02.airmeet_be.exception.ErrorCode;
+import com.cmu02.airmeet_be.exception.NotFoundException;
 import com.cmu02.airmeet_be.utils.Key;
 import com.cmu02.airmeet_be.utils.KeyPreFix;
 import lombok.RequiredArgsConstructor;
@@ -48,13 +50,13 @@ public class UserService {
         String joinCode = request.code();
 
         return userRedisTemplate.opsForValue().get(key.getUserKey(userId)) // 사용자 UUID 유무
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user ->
                         defaultRedisTemplate.opsForValue().get(key.getCodeKey(joinCode)) // 참가코드 유무
-                                .switchIfEmpty(Mono.error(new IllegalArgumentException("유효하지 않는 코드 입니다.")))
+                                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_VALID_JOIN_CODE)))
                                 .flatMap(roomId ->
                                         roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId)) // 회의방 존재 유무
-                                                .switchIfEmpty(Mono.error(new IllegalArgumentException("회의방이 존재하지 않습니다.")))
+                                                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_ROOM)))
                                         .map(MeetingRoomResponse::new)
                                 )
                 );
@@ -66,13 +68,13 @@ public class UserService {
         String joinCode = request.code();
 
         return userRedisTemplate.opsForValue().get(key.getUserKey(userId))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user ->
                     defaultRedisTemplate.opsForValue().get(key.getCodeKey(joinCode))
-                            .switchIfEmpty(Mono.error(new IllegalArgumentException("유효하지 않는 코드입니다.")))
+                            .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_VALID_JOIN_CODE)))
                             .flatMap(roomId ->
                                 roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
-                                        .switchIfEmpty(Mono.error(new IllegalArgumentException("회의방이 존재하지 않습니다.")))
+                                        .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_ROOM)))
                                         .flatMap(room -> Mono.when(
                                                 // 참가자 목록 추가
                                                 defaultRedisTemplate.opsForSet().add(key.enterUserListKey(roomId), userId),
@@ -86,11 +88,11 @@ public class UserService {
     // 해당 유저가 들어가 있는 모든 회의방 조회
     public Flux<MeetingRoomResponse> getRoomsByUser(UserRequestDto request) {
         return defaultRedisTemplate.opsForSet().members(key.enterUserRoomKey(request.uuid()))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 존재하지 않거나 참여 중인 회의방이 아닙니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(roomId -> roomRedisTemplate.opsForValue()
                             .get(key.getRoomKey(roomId))
                             .switchIfEmpty(
-                                    Mono.error(new IllegalArgumentException("존재하지 않는 회의방 입니다."))
+                                    Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_ROOM))
                             ).map(MeetingRoomResponse::new)
                 );
     }
@@ -110,10 +112,10 @@ public class UserService {
          * - room:roomId:users에서 uuid 삭제
          */
         return userRedisTemplate.opsForValue().get(key.getUserKey(request.uuid()))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user -> roomRedisTemplate.opsForValue()
                         .get(key.getRoomKey(request.roomId()))
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("존재하지 않는 회의방입니다.")))
+                        .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_ROOM)))
                         .flatMap(meetingRoom -> Mono.when(
                                defaultRedisTemplate.opsForSet().remove(key.enterUserRoomKey(user.getUuid()), meetingRoom.getRoomId()),
                                defaultRedisTemplate.opsForSet().remove(key.enterUserListKey(meetingRoom.getRoomId()), user.getUuid())

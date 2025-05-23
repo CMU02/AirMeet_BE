@@ -6,6 +6,8 @@ import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomWithCodeResponse;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
 import com.cmu02.airmeet_be.domain.model.User;
+import com.cmu02.airmeet_be.exception.ErrorCode;
+import com.cmu02.airmeet_be.exception.NotFoundException;
 import com.cmu02.airmeet_be.utils.Key;
 import com.cmu02.airmeet_be.utils.RandomCode;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,7 @@ public class MeetingRoomService {
         String userid = request.user().uuid();
 
         return userRedisTemplate.opsForValue().get(key.getUserKey(userid))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자가 존재하지 않습니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user ->
                         randomCode.generateJoinCode().flatMap(joinCode -> {
                             // 1. 회의방 객체 생성
@@ -62,7 +64,7 @@ public class MeetingRoomService {
         String userId = request.uuid();
 
         return userRedisTemplate.opsForValue().get(key.getUserKey(userId))
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user ->
                         roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
                                 .map(MeetingRoomWithCodeResponse::new)
