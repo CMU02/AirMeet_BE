@@ -1,7 +1,7 @@
 package com.cmu02.airmeet_be.services;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddUserRequestDto;
-import com.cmu02.airmeet_be.domain.dto.request.ExitRoomReqDto;
+import com.cmu02.airmeet_be.domain.dto.request.ExitRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.JoinRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
@@ -42,6 +42,24 @@ public class UserService {
         ).thenReturn(new UserResponseDto(userProfile));
     }
 
+    // JoinCode를 이용하여 회의방 정보 가져오기
+    public Mono<MeetingRoomResponse> getRoomByCode(JoinRoomRequestDto request) {
+        String userId = request.uuid();
+        String joinCode = request.code();
+
+        return userRedisTemplate.opsForValue().get(key.getUserKey(userId)) // 사용자 UUID 유무
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .flatMap(user ->
+                        defaultRedisTemplate.opsForValue().get(key.getCodeKey(joinCode)) // 참가코드 유무
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("유효하지 않는 코드 입니다.")))
+                                .flatMap(roomId ->
+                                        roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId)) // 회의방 존재 유무
+                                                .switchIfEmpty(Mono.error(new IllegalArgumentException("회의방이 존재하지 않습니다.")))
+                                        .map(MeetingRoomResponse::new)
+                                )
+                );
+    }
+
     // JoinCode로 이용하여 회의방 참가
     public Mono<MeetingRoomResponse> joinRoomByCode(JoinRoomRequestDto request) {
         String userId = request.uuid();
@@ -78,7 +96,7 @@ public class UserService {
     }
 
     // 해당 방 퇴장
-    public Mono<Void> removeUserFromRoom(ExitRoomReqDto request) {
+    public Mono<Void> removeUserFromRoom(ExitRoomRequestDto request) {
         /**
          * 시나리오
          * 1. 사용자 존재 여부 확인

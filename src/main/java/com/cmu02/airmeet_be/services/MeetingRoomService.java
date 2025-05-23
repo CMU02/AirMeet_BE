@@ -1,7 +1,9 @@
 package com.cmu02.airmeet_be.services;
 
-import com.cmu02.airmeet_be.domain.dto.request.MeetingRoomRequest;
+import com.cmu02.airmeet_be.domain.dto.request.AddMeetingRoomRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
+import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomWithCodeResponse;
 import com.cmu02.airmeet_be.domain.model.MeetingRoom;
 import com.cmu02.airmeet_be.domain.model.User;
 import com.cmu02.airmeet_be.utils.Key;
@@ -24,7 +26,7 @@ public class MeetingRoomService {
     private final Key key;
 
     // 회의방 생성
-    public Mono<MeetingRoomResponse> createRoom(MeetingRoomRequest request) {
+    public Mono<MeetingRoomResponse> createRoom(AddMeetingRoomRequestDto request) {
         String roomId = UUID.randomUUID().toString(); // 방 ID
         String userid = request.user().uuid();
 
@@ -52,6 +54,18 @@ public class MeetingRoomService {
                                     defaultRedisTemplate.opsForSet().add(key.enterUserRoomKey(userid), roomId)
                             ).thenReturn(new MeetingRoomResponse(room));
                         })
+                );
+    }
+
+    // 회의방 정보 가져오기
+    public Mono<MeetingRoomWithCodeResponse> getRoom(String roomId, UserRequestDto request) {
+        String userId = request.uuid();
+
+        return userRedisTemplate.opsForValue().get(key.getUserKey(userId))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("해당 사용자는 없습니다.")))
+                .flatMap(user ->
+                        roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
+                                .map(MeetingRoomWithCodeResponse::new)
                 );
     }
 }
