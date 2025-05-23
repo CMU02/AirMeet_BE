@@ -1,5 +1,6 @@
 services:
-  redis:
+  redis-master:
     image: 'redis:latest'
+    container_name: "airmeet-master"
     ports:
       - '6379:6379'

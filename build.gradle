@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web' // Web
     implementation 'org.springframework.boot:spring-boot-starter-websocket' // Web Socket
     implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebFlux
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Validation
     testImplementation 'io.projectreactor:reactor-test'
     compileOnly 'org.projectlombok:lombok' // Lombok
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose' // Docker Compose
@@ -36,6 +37,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' // LocalDateTime 직렬화하기 위해 설정
 }
 
 tasks.test {
