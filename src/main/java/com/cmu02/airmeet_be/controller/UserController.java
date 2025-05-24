@@ -35,7 +35,7 @@ public class UserController {
     }
 
     // 조인코드를 이용하여 회의방 정보 가져오기
-    @GetMapping("/get-joinRoom")
+    @PostMapping("/get-joinRoom")
     public Mono<ResponseEntity<MeetingRoomResponse>> getRoomByCode(@RequestBody @Valid JoinRoomRequestDto dto) {
         return service.getRoomByCode(dto)
                 .map(ResponseEntity::ok);
