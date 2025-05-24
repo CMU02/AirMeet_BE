@@ -1,6 +1,7 @@
 package com.cmu02.airmeet_be.controller;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddMeetingRoomRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.GetMeetingRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomWithCodeResponse;
@@ -23,12 +24,11 @@ public class MeetingRoomController {
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping("/{roomId}")
+    @PostMapping("/get-room")
     public Mono<ResponseEntity<MeetingRoomWithCodeResponse>> getRoom(
-            @PathVariable("roomId") String roomId,
-            @Valid @RequestBody UserRequestDto dto
-    ) {
-        return service.getRoom(roomId, dto)
+            @RequestBody @Valid GetMeetingRoomRequestDto dto
+            ) {
+        return service.getRoom(dto)
                 .map(ResponseEntity::ok);
     }
 }

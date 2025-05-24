@@ -1,6 +1,7 @@
 package com.cmu02.airmeet_be.services;
 
 import com.cmu02.airmeet_be.domain.dto.request.AddMeetingRoomRequestDto;
+import com.cmu02.airmeet_be.domain.dto.request.GetMeetingRoomRequestDto;
 import com.cmu02.airmeet_be.domain.dto.request.UserRequestDto;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomResponse;
 import com.cmu02.airmeet_be.domain.dto.response.MeetingRoomWithCodeResponse;
@@ -60,13 +61,13 @@ public class MeetingRoomService {
     }
 
     // 회의방 정보 가져오기
-    public Mono<MeetingRoomWithCodeResponse> getRoom(String roomId, UserRequestDto request) {
-        String userId = request.uuid();
+    public Mono<MeetingRoomWithCodeResponse> getRoom(GetMeetingRoomRequestDto request) {
+        String userId = request.user().uuid();
 
         return userRedisTemplate.opsForValue().get(key.getUserKey(userId))
                 .switchIfEmpty(Mono.error(new NotFoundException(ErrorCode.NOT_FOUND_USER_ID)))
                 .flatMap(user ->
-                        roomRedisTemplate.opsForValue().get(key.getRoomKey(roomId))
+                        roomRedisTemplate.opsForValue().get(key.getRoomKey(request.roomId()))
                                 .map(MeetingRoomWithCodeResponse::new)
                 );
     }
