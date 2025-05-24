@@ -42,8 +42,8 @@ public class UserController {
     }
 
     // 해당 유저가 참가하고 있는 방 조회
-    @GetMapping("/rooms")
-    public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody UserRequestDto dto) {
+    @PostMapping("/rooms")
+    public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody @Valid UserRequestDto dto) {
         return service.getRoomsByUser(dto);
     }
 
