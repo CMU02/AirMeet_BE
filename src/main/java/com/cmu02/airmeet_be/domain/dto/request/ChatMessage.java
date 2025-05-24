@@ -5,9 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 public record ChatMessage(
-        @NotBlank String roomId,
-        @NotBlank String senderUuid,
-        @NotBlank String senderNickname,
+        @NotBlank String uuid,
+        @NotBlank String nickname,
         String content,
         LocalDateTime timestamp
 ) {

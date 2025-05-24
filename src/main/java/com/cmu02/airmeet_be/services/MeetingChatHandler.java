@@ -29,7 +29,7 @@ public class MeetingChatHandler extends TextWebSocketHandler {
     private final ObjectMapper customMapper;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         String roomId = extractRoomId(Objects.requireNonNull(session.getUri()));
 
         roomSinkMap
@@ -43,8 +43,9 @@ public class MeetingChatHandler extends TextWebSocketHandler {
         ChatMessage chat = customMapper.readValue(message.getPayload(), ChatMessage.class);
 
         String json = customMapper.writeValueAsString(chat);
+        String roomId = extractRoomId(Objects.requireNonNull(session.getUri()));
 
-        roomSinkMap.getOrDefault(chat.roomId(), Collections.emptySet())
+        roomSinkMap.getOrDefault(roomId, Collections.emptySet())
                 .forEach(s -> {
                     try {
                         s.sendMessage(new TextMessage(json));
@@ -55,7 +56,7 @@ public class MeetingChatHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String roomId = extractRoomId(Objects.requireNonNull(session.getUri()));
         Set<WebSocketSession> set = roomSinkMap.get(roomId);
 
