@@ -35,15 +35,15 @@ public class UserController {
     }
 
     // 조인코드를 이용하여 회의방 정보 가져오기
-    @GetMapping("/get-joinRoom")
+    @PostMapping("/get-joinRoom")
     public Mono<ResponseEntity<MeetingRoomResponse>> getRoomByCode(@RequestBody @Valid JoinRoomRequestDto dto) {
         return service.getRoomByCode(dto)
                 .map(ResponseEntity::ok);
     }
 
     // 해당 유저가 참가하고 있는 방 조회
-    @GetMapping("/rooms")
-    public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody UserRequestDto dto) {
+    @PostMapping("/rooms")
+    public Flux<MeetingRoomResponse> getRoomsByUser(@RequestBody @Valid UserRequestDto dto) {
         return service.getRoomsByUser(dto);
     }
 
