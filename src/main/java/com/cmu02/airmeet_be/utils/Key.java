@@ -56,9 +56,9 @@ public class Key {
     /**
      * roomId에 해당하는 채팅내용
      * @param roomId 회의방 고유 아이디
-     * @return "chat-room:roomId"
+     * @return "chat-room:roomId:messages"
      */
     public String getChatRoomKey(String roomId) {
-        return KeyPreFix.CHAT_ROOM_PREFIX.getKeyPrefix() + roomId;
+        return KeyPreFix.CHAT_ROOM_PREFIX.getKeyPrefix() + roomId + KeySuffix.MESSAGES_SUFFIX.getKeySuffix();
     }
 }
