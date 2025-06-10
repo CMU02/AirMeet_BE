@@ -19,6 +19,6 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(chatRedisHandler, "/ws/rooms/{roodId}")
-                .setAllowedOrigins("http://localhost:3000");
+                .setAllowedOrigins("http://localhost:3000", "https://air-meet-fe.vercel.app/");
     }
 }
