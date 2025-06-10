@@ -29,8 +29,8 @@ public class RedisConfig {
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 // SSL/TLS 보안연결(암호화된 통신)을 사용하도록 설정
                 // 개발버전은 사용하지 않음
-                 .useSsl().and()
-                .commandTimeout(Duration.ofSeconds(5)) // 명령을 보낸후 최대 5초 기다림
+//                 .useSsl().and()
+                .commandTimeout(Duration.ofSeconds(2)) // 명령을 보낸후 최대 5초 기다림
                 .shutdownTimeout(Duration.ZERO) // 클라이언트 종료할 때 최대 대기 시간은 0초 즉, 즉시 종료
                 .build();
 
